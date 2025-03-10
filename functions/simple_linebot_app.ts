@@ -1,7 +1,7 @@
 // dotenv を用いて .env を読み込む
 import "dotenv/config";
 
-export const lambda_handler = async (event: any): Promise<any> => {
+export const handler = async (event: any): Promise<any> => {
   const events = event.events;
   if (Array.isArray(events) && events.length > 0) {
     // 最初のイベントからreplyTokenを取得

@@ -15,15 +15,20 @@ COPY package.json .
 RUN npm install --production
 # コンパイル成果物と .env をコピー
 # ※ tsconfig.json の outDir が "app" のため、成果物は /app/app/simple_linebot_app.js にあります
-COPY --from=build /app/app/simple_linebot_app.js ${LAMBDA_TASK_ROOT}/app.js
+COPY --from=build /app/app/simple_linebot_app.js ${LAMBDA_TASK_ROOT}/index.js
 COPY .env ${LAMBDA_TASK_ROOT}/.env
 
-# ローカル参照用に /app/dist を作成し、ファイルをコピー
-RUN mkdir -p /app/dist && cp ${LAMBDA_TASK_ROOT}/app.js /tmp/app.js
-# docker cp でファイルをコピーするため、ファイルのパーミッションを変更
-RUN chmod 644 /tmp/app.js
+# ローカル参照用にファイルをコピー
+RUN cp ${LAMBDA_TASK_ROOT}/index.js /tmp/index.js
 # コピーは次のコマンドで行う
 # docker cp lambda-service:/tmp/app.js ./build/app.js
+
+# デプロイ用のzipファイルを作成
+# AWS Lambda 向けのデプロイ用.zipファイルを node_modules も含めて /tmp に作成
+RUN yum install -y zip
+RUN zip -r /tmp/lambda.zip index.js .env node_modules
+# コピーは次のコマンドで行う
+# docker cp lambda-service:/tmp/lambda.zip ./build/lambda.zip
 
 
 CMD ["app.lambda_handler"]
